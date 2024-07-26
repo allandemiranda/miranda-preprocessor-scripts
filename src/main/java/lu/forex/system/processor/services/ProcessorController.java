@@ -52,7 +52,7 @@ public class ProcessorController {
 
   private static final Pair<Integer, Integer> RANGER_TP_SL = Pair.of(50, 500);
   private static final int SKIP_RANGER_TP = 5;
-  private static final BigDecimal RISK_SL = BigDecimal.valueOf(0.9);
+  private static final BigDecimal RISK_SL = BigDecimal.valueOf(1.5);
   private static final BigDecimal TP_TARGET = BigDecimal.valueOf(0.60);
 
   public static void main(String[] args) {

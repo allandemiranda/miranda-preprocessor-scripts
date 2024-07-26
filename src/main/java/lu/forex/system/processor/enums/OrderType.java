@@ -17,8 +17,8 @@ public enum OrderType {
     };
     if (last.getDateTime().getDayOfWeek().equals(DayOfWeek.TUESDAY) && current.getDateTime().getDayOfWeek().equals(DayOfWeek.WEDNESDAY)) {
       return switch (this) {
-        case BUY -> tmpProfit.add(symbol.getSwapLong().multiply(symbol.getSwapLong()));
-        case SELL -> tmpProfit.add(symbol.getPip().multiply(symbol.getSwapShort()));
+        case BUY -> tmpProfit.add(symbol.getSwapLong());
+        case SELL -> tmpProfit.add(symbol.getSwapShort());
       };
     } else {
       return tmpProfit;
