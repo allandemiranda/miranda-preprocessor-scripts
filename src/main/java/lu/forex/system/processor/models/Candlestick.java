@@ -1,40 +1,29 @@
 package lu.forex.system.processor.models;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.Set;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lu.forex.system.processor.enums.SignalIndicator;
 import lu.forex.system.processor.enums.TimeFrame;
+import lu.forex.system.processor.utils.TimeFrameUtils;
 
-@Data
-@Builder
-public class Candlestick implements Serializable {
+@Getter
+@Setter
+public class Candlestick {
 
-  @Serial
-  private static final long serialVersionUID = 4716144876031926000L;
+  private final LocalDateTime timestamp;
+  private final LocalDateTime openTickTimestamp;
+  private final CandlestickBody body;
+  private final AverageDirectionalIndex adx = new AverageDirectionalIndex();
+  private final RelativeStrengthIndex rsi = new RelativeStrengthIndex();
+  private SignalIndicator signalIndicator = SignalIndicator.NEUTRAL;
 
-  private LocalDateTime timestamp;
-  private LocalDateTime calculatedTickTime;
-  private BigDecimal high;
-  private BigDecimal low;
-  private BigDecimal open;
-  private BigDecimal close;
-  private Set<@NonNull TechnicalIndicator> technicalIndicators;
-
-  public @NonNull SignalIndicator getSignalIndicator() {
-    if (this.getTechnicalIndicators().stream().filter(technicalIndicator -> SignalIndicator.BULLISH.equals(technicalIndicator.getSignal())).count() == 2) {
-      return SignalIndicator.BULLISH;
-    } else if (this.getTechnicalIndicators().stream().filter(technicalIndicator -> SignalIndicator.BEARISH.equals(technicalIndicator.getSignal())).count() == 2) {
-      return SignalIndicator.BEARISH;
-    } else {
-      return SignalIndicator.NEUTRAL;
-    }
+  public Candlestick(final @NonNull Tick tick, final @NonNull TimeFrame timeFrame) {
+    this.timestamp = TimeFrameUtils.getCandlestickTimestamp(tick.getDateTime(), timeFrame);
+    this.openTickTimestamp = tick.getDateTime();
+    this.body = new CandlestickBody(tick);
   }
 
   @Override

@@ -1,25 +1,25 @@
 package lu.forex.system.processor.models;
 
-import java.io.Serial;
-import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.DayOfWeek;
-import java.time.LocalTime;
 import java.util.Objects;
-import lombok.Builder;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-@Data
-@Builder
-public class Trade implements Serializable {
+@Getter
+@AllArgsConstructor
+public class Trade {
 
-  @Serial
-  private static final long serialVersionUID = 1494334968768706815L;
+  private final int stopLoss;
+  private final int takeProfit;
+  private final DayOfWeek slotWeek;
+  private final int slotStart;
 
-  private int stopLoss;
-  private int takeProfit;
-  private DayOfWeek slotWeek;
-  private LocalTime slotStart;
-  private LocalTime slotEnd;
+  private final long ordersTotal;
+  private final long takeProfitTotal;
+  private final long stopLossTotal;
+  private final BigDecimal hitPercentage;
+  private final BigDecimal profitTotal;
 
   @Override
   public boolean equals(final Object o) {
@@ -30,12 +30,11 @@ public class Trade implements Serializable {
       return false;
     }
     final Trade trade = (Trade) o;
-    return getStopLoss() == trade.getStopLoss() && getTakeProfit() == trade.getTakeProfit() && getSlotWeek() == trade.getSlotWeek() && Objects.equals(getSlotStart(), trade.getSlotStart())
-           && Objects.equals(getSlotEnd(), trade.getSlotEnd());
+    return stopLoss == trade.stopLoss && takeProfit == trade.takeProfit && slotStart == trade.slotStart && slotWeek == trade.slotWeek;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getStopLoss(), getTakeProfit(), getSlotWeek(), getSlotStart(), getSlotEnd());
+    return Objects.hash(stopLoss, takeProfit, slotWeek, slotStart);
   }
 }

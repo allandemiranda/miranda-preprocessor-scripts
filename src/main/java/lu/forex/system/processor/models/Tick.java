@@ -1,26 +1,24 @@
 package lu.forex.system.processor.models;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import lombok.Builder;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
 
-@Data
-@Builder
-public class Tick implements Serializable {
+@Getter
+@AllArgsConstructor
+public class Tick {
 
-  @Serial
-  private static final long serialVersionUID = -5710627255980078262L;
+  private final LocalDateTime dateTime;
+  private final BigDecimal bid;
+  private final BigDecimal ask;
 
-  private LocalDateTime dateTime;
-  private BigDecimal bid;
-  private BigDecimal ask;
-
+  @NonNull
   public BigDecimal getSpread() {
-    return bid.subtract(ask).multiply(BigDecimal.valueOf(-1.0));
+    final BigDecimal spread = this.getBid().subtract(this.getAsk());
+    return spread.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO : spread.multiply(BigDecimal.valueOf(-1.0));
   }
 
   @Override
