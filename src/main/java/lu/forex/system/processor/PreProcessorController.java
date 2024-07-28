@@ -1,6 +1,9 @@
 package lu.forex.system.processor;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
@@ -25,9 +28,19 @@ public class PreProcessorController {
           final TimeFrame timeFrame = triple.getMiddle();
           final Symbol symbol = triple.getRight();
 
-          PrintsUtils.printCandlesticksExcel(inputFile, timeFrame, symbol, outputFolder);
-          final Collection<Trade> trades = TradeService.getTrades(inputFile, timeFrame, symbol).toList();
-          PrintsUtils.printTradesExcel(trades, timeFrame, symbol, outputFolder);
+          try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
+            PrintsUtils.printCandlesticksExcel(bufferedReader, timeFrame, symbol, outputFolder);
+          } catch (IOException e) {
+            throw new IllegalStateException(e);
+          }
+
+          try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
+            final Collection<Trade> trades = TradeService.getTrades(bufferedReader, timeFrame, symbol).toList();
+            PrintsUtils.printTradesExcel(trades, timeFrame, symbol, outputFolder);
+          } catch (IOException e) {
+            throw new IllegalStateException(e);
+          }
+
         });
 
   }

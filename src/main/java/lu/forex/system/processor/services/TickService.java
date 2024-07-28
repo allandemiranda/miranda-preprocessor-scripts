@@ -23,8 +23,7 @@ public class TickService {
    * @return The ticks Pair ( CURRENT | LAST )
    */
   @SneakyThrows
-  public static Stream<Pair<Tick, Tick>> getTicks(final @NonNull File inputFile) {
-    try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
+  public static Stream<Pair<Tick, Tick>> getTicks(final@NonNull BufferedReader bufferedReader) {
       final AtomicReference<Tick> lastTick = new AtomicReference<>(new Tick(LocalDateTime.MIN, BigDecimal.valueOf(-1d), BigDecimal.valueOf(-1d)));
       return bufferedReader.lines().skip(1).map(line -> {
         final Tick lineTick = getLineTick(line);
@@ -40,7 +39,6 @@ public class TickService {
         }
         return null;
       }).filter(Objects::nonNull);
-    }
   }
 
   private static @NonNull Tick getLineTick(final @NonNull String line) {

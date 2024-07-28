@@ -1,5 +1,6 @@
 package lu.forex.system.processor.utils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.time.DayOfWeek;
@@ -26,7 +27,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class PrintsUtils {
 
   @SneakyThrows
-  public static void printCandlesticksExcel(final @NonNull File inputFile, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol, final @NonNull File outputFolder) {
+  public static void printCandlesticksExcel(final @NonNull BufferedReader bufferedReader, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol, final @NonNull File outputFolder) {
     try (final Workbook workbook = new XSSFWorkbook()) {
       final Sheet sheet = workbook.createSheet(symbol.name());
       final Row headerRow = sheet.createRow(0);
@@ -35,7 +36,7 @@ public class PrintsUtils {
       IntStream.range(0, header.length).forEach(i -> headerRow.createCell(i).setCellValue(header[i]));
 
       final AtomicInteger i = new AtomicInteger(1);
-      CandlestickService.getCandlesticks(inputFile, timeFrame).forEach(candlestick -> {
+      CandlestickService.getCandlesticks(bufferedReader, timeFrame).forEach(candlestick -> {
         final Row row = sheet.createRow(i.getAndIncrement());
         IntStream.range(0, header.length).forEach(j -> {
           final Cell cell = row.createCell(j);

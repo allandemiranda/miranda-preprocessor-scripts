@@ -1,6 +1,6 @@
 package lu.forex.system.processor.services;
 
-import java.io.File;
+import java.io.BufferedReader;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -21,10 +21,10 @@ public class CandlestickService {
   private static final int REPOSITORY_SIZE = 14;
 
   @SneakyThrows
-  public static Stream<Candlestick> getCandlesticks(final @NonNull File inputFile, final @NonNull TimeFrame timeFrame) {
+  public static Stream<Candlestick> getCandlesticks(final @NonNull BufferedReader bufferedReader, final @NonNull TimeFrame timeFrame) {
     final LinkedList<Candlestick> repositoryBuffer = getInitCandlestickRepository();
 
-    return TickService.getTicks(inputFile).map(tickTickPair -> {
+    return TickService.getTicks(bufferedReader).map(tickTickPair -> {
       final Tick currentTick = tickTickPair.getKey();
       final Tick lastTick = tickTickPair.getValue();
 
@@ -54,8 +54,12 @@ public class CandlestickService {
     return IntStream.range(0, REPOSITORY_SIZE).mapToObj(i -> (Candlestick) null).collect(Collectors.toCollection(LinkedList::new));
   }
 
-  public static void calculateSignalIndicator(final @NonNull Candlestick currentCandlestick, final @NonNull Candlestick lastCandlestick) {
-    if (currentCandlestick.getAdx().getSignal().equals(currentCandlestick.getRsi().getSignal()) && !currentCandlestick.getAdx().getSignal().equals(lastCandlestick.getSignalIndicator())) {
+  public static void calculateSignalIndicator(final @NonNull Candlestick currentCandlestick, final Candlestick lastCandlestick) {
+    if (Objects.nonNull(lastCandlestick)) {
+      if (currentCandlestick.getAdx().getSignal().equals(currentCandlestick.getRsi().getSignal()) && !currentCandlestick.getAdx().getSignal().equals(lastCandlestick.getSignalIndicator())) {
+        currentCandlestick.setSignalIndicator(currentCandlestick.getAdx().getSignal());
+      }
+    } else if (currentCandlestick.getAdx().getSignal().equals(currentCandlestick.getRsi().getSignal())) {
       currentCandlestick.setSignalIndicator(currentCandlestick.getAdx().getSignal());
     }
   }
