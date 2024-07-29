@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
+import lombok.extern.log4j.Log4j2;
 import lu.forex.system.processor.enums.Symbol;
 import lu.forex.system.processor.enums.TimeFrame;
 import lu.forex.system.processor.models.Trade;
@@ -14,6 +15,7 @@ import lu.forex.system.processor.services.TradeService;
 import lu.forex.system.processor.utils.PrintsUtils;
 import org.apache.commons.lang3.tuple.Triple;
 
+@Log4j2
 public class PreProcessorController {
 
   public static void main(String[] args) {
@@ -21,7 +23,8 @@ public class PreProcessorController {
     final File inputFolder = new File(rootFolder, "inputMt5");
     final File outputFolder = new File(rootFolder, "outputMt5");
 
-    Arrays.stream(Objects.requireNonNull(inputFolder.listFiles())).parallel()
+    Arrays.stream(Objects.requireNonNull(inputFolder.listFiles()))
+//        .parallel()
         .filter(file -> Arrays.stream(Symbol.values()).anyMatch(symbol -> symbol.name().equals(file.getName().split("_")[0])))
         .flatMap(file -> Arrays.stream(TimeFrame.values()).map(timeFrame -> Triple.of(file, timeFrame, Symbol.valueOf(file.getName().split("_")[0])))).forEach(triple -> {
           final File inputFile = triple.getLeft();
@@ -35,7 +38,7 @@ public class PreProcessorController {
           }
 
           try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
-            final Collection<Trade> trades = TradeService.getTrades(bufferedReader, timeFrame, symbol).toList();
+            final Collection<Trade> trades = TradeService.getTrades(inputFile, bufferedReader, timeFrame, symbol).toList();
             PrintsUtils.printTradesExcel(trades, timeFrame, symbol, outputFolder);
           } catch (IOException e) {
             throw new IllegalStateException(e);

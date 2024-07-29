@@ -10,18 +10,22 @@ import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import lombok.extern.log4j.Log4j2;
+import lu.forex.system.processor.enums.Symbol;
 import lu.forex.system.processor.enums.TimeFrame;
 import lu.forex.system.processor.models.Candlestick;
 import lu.forex.system.processor.models.Tick;
 import lu.forex.system.processor.utils.TimeFrameUtils;
 
+@Log4j2
 @UtilityClass
 public class CandlestickService {
 
   private static final int REPOSITORY_SIZE = 14;
 
   @SneakyThrows
-  public static Stream<Candlestick> getCandlesticks(final @NonNull BufferedReader bufferedReader, final @NonNull TimeFrame timeFrame) {
+  public static Stream<Candlestick> getCandlesticks(final @NonNull BufferedReader bufferedReader, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol) {
+    log.info("Getting Candlesticks for symbol {} at timeframe {}", symbol.name(), timeFrame.name());
     final LinkedList<Candlestick> repositoryBuffer = getInitCandlestickRepository();
 
     return TickService.getTicks(bufferedReader).map(tickTickPair -> {

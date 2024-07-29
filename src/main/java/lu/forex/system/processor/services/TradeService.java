@@ -1,10 +1,15 @@
 package lu.forex.system.processor.services;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -15,15 +20,18 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.UtilityClass;
+import lombok.extern.log4j.Log4j2;
 import lu.forex.system.processor.enums.OrderStatus;
 import lu.forex.system.processor.enums.SignalIndicator;
 import lu.forex.system.processor.enums.Symbol;
 import lu.forex.system.processor.enums.TimeFrame;
+import lu.forex.system.processor.models.Candlestick;
 import lu.forex.system.processor.models.Tick;
 import lu.forex.system.processor.models.Trade;
 import lu.forex.system.processor.utils.MathUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+@Log4j2
 @UtilityClass
 public class TradeService {
 
@@ -32,7 +40,8 @@ public class TradeService {
   private static final BigDecimal RISK_SL = BigDecimal.valueOf(0.8);
   private static final BigDecimal TP_TARGET = BigDecimal.valueOf(0.60);
 
-  public static Stream<Trade> getTrades(final @NonNull BufferedReader bufferedReader, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol) {
+  public static Stream<Trade> getTrades(final @NonNull File inputFile, final @NonNull BufferedReader bufferedReader, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol) {
+    log.info("Getting Trades for symbol {} at timeframe {}", symbol.name(), timeFrame.name());
 
     final Collection<RangerProfit> rangerProfitCollection = IntStream.rangeClosed(0, (RANGER_TP_SL.getValue() - RANGER_TP_SL.getKey()) / SKIP_RANGER_TP).mapToObj(i -> {
       final int power = (SKIP_RANGER_TP * i);
@@ -41,25 +50,37 @@ public class TradeService {
       return new RangerProfit(BigDecimal.valueOf(tp), BigDecimal.valueOf(sl));
     }).collect(Collectors.toSet());
 
-    return CandlestickService.getCandlesticks(bufferedReader, timeFrame).filter(candlestick -> !SignalIndicator.NEUTRAL.equals(candlestick.getSignalIndicator()))
-        .flatMap(candlestick -> rangerProfitCollection.stream().map(rangerProfit -> {
+    final List<Candlestick> candlestickList = CandlestickService.getCandlesticks(bufferedReader, timeFrame, symbol)
+        .filter(candlestick -> !SignalIndicator.NEUTRAL.equals(candlestick.getSignalIndicator()))
+        .toList();
+    log.info("We have {} candlesticks not neutral in symbol {} at timeframe {}", candlestickList.size(), symbol.name(), timeFrame.name());
+
+    final Map<TimeScope, Map<RangerProfit, List<PreTrade>>> timeScopeMapMap = candlestickList.parallelStream()
+        .flatMap(candlestick -> rangerProfitCollection.parallelStream().map(rangerProfit -> {
           final PreTrade preTrade = new PreTrade(rangerProfit,
               new TimeScope(candlestick.getOpenTickTimestamp().getDayOfWeek(), candlestick.getOpenTickTimestamp().getHour() / timeFrame.getSlotTimeH()));
-          TickService.getTicks(bufferedReader).forEach(tickTickPair -> {
-            if (preTrade.getOrderStatus().equals(OrderStatus.OPEN)) {
-              final Tick currentTick = tickTickPair.getKey();
-              if (currentTick.getDateTime().isAfter(candlestick.getOpenTickTimestamp())) {
-                final Tick lastTick = tickTickPair.getValue();
-                final BigDecimal tmpProfit = candlestick.getSignalIndicator().getOrderType().getProfit(lastTick, currentTick, symbol);
-                preTrade.setProfit(preTrade.getProfit().add(tmpProfit));
-              } else if (currentTick.getDateTime().isEqual(candlestick.getOpenTickTimestamp())) {
-                preTrade.setProfit(currentTick.getSpread());
+          try (final BufferedReader tickTradeBufferedReader = new BufferedReader(new FileReader(inputFile))) {
+            TickService.getTicks(tickTradeBufferedReader).forEach(tickTickPair -> {
+              if (preTrade.getOrderStatus().equals(OrderStatus.OPEN)) {
+                final Tick currentTick = tickTickPair.getKey();
+                if (currentTick.getDateTime().isAfter(candlestick.getOpenTickTimestamp())) {
+                  final Tick lastTick = tickTickPair.getValue();
+                  final BigDecimal tmpProfit = candlestick.getSignalIndicator().getOrderType().getProfit(lastTick, currentTick, symbol);
+                  preTrade.setProfit(preTrade.getProfit().add(tmpProfit));
+                } else if (currentTick.getDateTime().isEqual(candlestick.getOpenTickTimestamp())) {
+                  preTrade.setProfit(currentTick.getSpread());
+                }
               }
-            }
-          });
+            });
+          } catch (IOException e) {
+            throw new IllegalStateException(e);
+          }
           return preTrade;
-        })).collect(Collectors.groupingBy(PreTrade::getTimeScope, Collectors.groupingBy(PreTrade::getRangerProfit))).entrySet().parallelStream()
-        .map(timeScopeMapEntry -> timeScopeMapEntry.getValue().entrySet().parallelStream().map(rangerProfitListEntry -> {
+        })).collect(Collectors.groupingBy(PreTrade::getTimeScope, Collectors.groupingBy(PreTrade::getRangerProfit)));
+    log.info("We have {} pre trades to analise in symbol {} at timeframe {}", timeScopeMapMap.values().stream().mapToInt(m -> m.values().size()).sum(), symbol.name(), timeFrame.name());
+
+    return timeScopeMapMap.entrySet().parallelStream()
+        .map(timeScopeMapEntry -> timeScopeMapEntry.getValue().entrySet().stream().map(rangerProfitListEntry -> {
           final TimeScope timeScope = timeScopeMapEntry.getKey();
           final RangerProfit rangerProfit = rangerProfitListEntry.getKey();
           final long numberPreTradesTP = rangerProfitListEntry.getValue().stream().filter(preTrade -> OrderStatus.TAKE_PROFIT.equals(preTrade.getOrderStatus())).count();
@@ -73,8 +94,8 @@ public class TradeService {
           return new Trade(rangerProfit.getStopLoss().intValue(), rangerProfit.getTakeProfit().intValue(), timeScope.getWeek(), timeScope.getHour(), numberPreTradesTotal, numberPreTradesTP,
               numberPreTradesSL, hitPercentage, profitTotal);
 
-        }).filter(trade -> trade.getHitPercentage().compareTo(TP_TARGET) >= 0).min(Comparator.comparingDouble(value -> value.getProfitTotal().doubleValue()))).filter(Optional::isPresent)
-        .map(Optional::get);
+        }).filter(trade -> trade.getHitPercentage().compareTo(TP_TARGET) >= 0).min(Comparator.comparingDouble(value -> value.getProfitTotal().doubleValue())))
+        .filter(Optional::isPresent).map(Optional::get);
   }
 
   @Getter

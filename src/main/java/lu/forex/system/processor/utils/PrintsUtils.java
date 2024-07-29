@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import lombok.extern.log4j.Log4j2;
 import lu.forex.system.processor.enums.Symbol;
 import lu.forex.system.processor.enums.TimeFrame;
 import lu.forex.system.processor.models.Trade;
@@ -23,11 +24,13 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+@Log4j2
 @UtilityClass
 public class PrintsUtils {
 
   @SneakyThrows
   public static void printCandlesticksExcel(final @NonNull BufferedReader bufferedReader, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol, final @NonNull File outputFolder) {
+    log.info("Printing Candlesticks Excel for symbol {} at timeframe {}", symbol.name(), timeFrame.name());
     try (final Workbook workbook = new XSSFWorkbook()) {
       final Sheet sheet = workbook.createSheet(symbol.name());
       final Row headerRow = sheet.createRow(0);
@@ -36,7 +39,7 @@ public class PrintsUtils {
       IntStream.range(0, header.length).forEach(i -> headerRow.createCell(i).setCellValue(header[i]));
 
       final AtomicInteger i = new AtomicInteger(1);
-      CandlestickService.getCandlesticks(bufferedReader, timeFrame).forEach(candlestick -> {
+      CandlestickService.getCandlesticks(bufferedReader, timeFrame, symbol).forEach(candlestick -> {
         final Row row = sheet.createRow(i.getAndIncrement());
         IntStream.range(0, header.length).forEach(j -> {
           final Cell cell = row.createCell(j);
@@ -66,10 +69,12 @@ public class PrintsUtils {
       });
       workbook.write(new FileOutputStream(new File(outputFolder, symbol.name().concat("_").concat(timeFrame.name()).concat("_candlesticks.xlsx"))));
     }
+    log.info("Candlesticks Excel for symbol {} at timeframe {} printed", symbol.name(), timeFrame.name());
   }
 
   @SneakyThrows
   public static void printTradesExcel(final @NonNull Collection<Trade> tradesCollection, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol, final @NonNull File outputFolder) {
+    log.info("Printing Trades Excel for symbol {} at timeframe {}", symbol.name(), timeFrame.name());
     final DayOfWeek[] dayOfWeeks = Arrays.stream(DayOfWeek.values()).filter(dayOfWeek -> !DayOfWeek.SATURDAY.equals(dayOfWeek) && !DayOfWeek.SUNDAY.equals(dayOfWeek))
         .toArray(DayOfWeek[]::new);
     final int[] times = IntStream.range(0, 24 / timeFrame.getSlotTimeH()).toArray();
@@ -98,5 +103,6 @@ public class PrintsUtils {
       });
       workbook.write(new FileOutputStream(new File(outputFolder, symbol.name().concat("_").concat(timeFrame.name()).concat("_trades.xlsx"))));
     }
+    log.info("Trades Excel for symbol {} at timeframe {} printed", symbol.name(), timeFrame.name());
   }
 }
