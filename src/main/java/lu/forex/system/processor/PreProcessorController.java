@@ -32,15 +32,15 @@ public class PreProcessorController {
           try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
             PrintsUtils.printCandlesticksExcel(bufferedReader, timeFrame, symbol, outputFolder);
           } catch (IOException e) {
+            log.warn("Can't print the candlesticks excel for symbol {} at timeframe {}", symbol.name(), timeFrame.name(), e);
+          }
+
+          try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
+            final Collection<Trade> trades = TradeService.getTrades(inputFile, bufferedReader, timeFrame, symbol);
+            PrintsUtils.printTradesExcel(trades, timeFrame, symbol, outputFolder);
+          } catch (IOException e) {
             throw new IllegalStateException(e);
           }
-//
-//          try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
-//            final Collection<Trade> trades = TradeService.getTrades(inputFile, bufferedReader, timeFrame, symbol);
-//            PrintsUtils.printTradesExcel(trades, timeFrame, symbol, outputFolder);
-//          } catch (IOException e) {
-//            throw new IllegalStateException(e);
-//          }
         }));
   }
 }
