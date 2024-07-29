@@ -59,11 +59,7 @@ public class CandlestickService {
   }
 
   public static void calculateSignalIndicator(final @NonNull Candlestick currentCandlestick, final Candlestick lastCandlestick) {
-    if (Objects.nonNull(lastCandlestick)) {
-      if (currentCandlestick.getAdx().getSignal().equals(currentCandlestick.getRsi().getSignal()) && !currentCandlestick.getAdx().getSignal().equals(lastCandlestick.getSignalIndicator())) {
-        currentCandlestick.setSignalIndicator(currentCandlestick.getAdx().getSignal());
-      }
-    } else if (currentCandlestick.getAdx().getSignal().equals(currentCandlestick.getRsi().getSignal())) {
+    if (Objects.nonNull(lastCandlestick) && currentCandlestick.getAdx().getSignal().equals(currentCandlestick.getRsi().getSignal())) {
       currentCandlestick.setSignalIndicator(currentCandlestick.getAdx().getSignal());
     }
   }
