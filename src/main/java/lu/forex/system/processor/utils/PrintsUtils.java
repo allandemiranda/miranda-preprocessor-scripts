@@ -83,7 +83,7 @@ public class PrintsUtils {
 
   @SneakyThrows
   public static void printCandlesticksMemoryExcel(final @NonNull File inputFile, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol, final @NonNull File outputFolder) {
-    log.info("Printing Memory Candlesticks Excel for symbol {} at timeframe", symbol.name(), timeFrame.name());
+    log.info("Printing Memory Candlesticks Excel for symbol {} at timeframe {}", symbol.name(), timeFrame.name());
     try (final Workbook workbook = new XSSFWorkbook(); FileWriter fileWriter = new FileWriter(
         new File(outputFolder, symbol.name().concat("_").concat(timeFrame.name()).concat("_candlesticks_memory.csv"))); CSVWriter csvWriter = new CSVWriter(fileWriter)) {
       final Sheet sheet = workbook.createSheet(symbol.name());
@@ -155,6 +155,7 @@ public class PrintsUtils {
 
   @SneakyThrows
   public static void printLastTickMemoryExcel(final @NonNull File inputFile, final @NonNull Symbol symbol, final @NonNull File outputFolder) {
+    log.info("Printing Last Tick Excel for symbol {}", symbol.name());
     try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile)); FileWriter fileWriter = new FileWriter(
         new File(outputFolder, symbol.name().concat("_lastTick.csv"))); CSVWriter csvWriter = new CSVWriter(fileWriter)) {
       final AtomicReference<Tick> tick = new AtomicReference<>(new Tick(LocalDateTime.MIN, BigDecimal.valueOf(-1d), BigDecimal.valueOf(-1d)));
@@ -168,12 +169,23 @@ public class PrintsUtils {
   }
 
   @SneakyThrows
+  public static Tick lastTickMemoryExternalizing(final @NonNull File inputFile) {
+    log.info("Printing Last Tick Externalizing");
+    try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
+      final AtomicReference<Tick> tick = new AtomicReference<>(new Tick(LocalDateTime.MIN, BigDecimal.valueOf(-1d), BigDecimal.valueOf(-1d)));
+      TickService.getTicks(bufferedReader).forEach(t -> tick.set(t.getKey()));
+      return tick.get();
+    }
+  }
+
+  @SneakyThrows
   public static void printTradesExcel(final @NonNull Collection<Trade> tradesCollection, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol, final @NonNull File outputFolder) {
     log.info("Printing Trades Excel for symbol {} at timeframe {}", symbol.name(), timeFrame.name());
     final DayOfWeek[] dayOfWeeks = Arrays.stream(DayOfWeek.values()).filter(dayOfWeek -> !DayOfWeek.SATURDAY.equals(dayOfWeek) && !DayOfWeek.SUNDAY.equals(dayOfWeek))
         .toArray(DayOfWeek[]::new);
     final int[] times = IntStream.range(0, 24 / timeFrame.getSlotTimeH()).toArray();
-    try (final Workbook workbook = new XSSFWorkbook(); FileWriter fileWriter = new FileWriter(new File(outputFolder, symbol.name().concat("_").concat(timeFrame.name()).concat("_trades_memory.csv"))); CSVWriter csvWriter = new CSVWriter(fileWriter)) {
+    try (final Workbook workbook = new XSSFWorkbook(); FileWriter fileWriter = new FileWriter(
+        new File(outputFolder, symbol.name().concat("_").concat(timeFrame.name()).concat("_trades_memory.csv"))); CSVWriter csvWriter = new CSVWriter(fileWriter)) {
       Stream.of("TP", "SL", "TOTAL", "PERCENTAGE_TP", "BALANCE").forEach(sheetName -> {
         final Sheet sheet = workbook.createSheet(sheetName);
         final Row headerRow = sheet.createRow(0);
