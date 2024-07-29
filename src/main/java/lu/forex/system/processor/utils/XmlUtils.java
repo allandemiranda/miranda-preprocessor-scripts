@@ -2,6 +2,7 @@ package lu.forex.system.processor.utils;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Objects;
@@ -21,8 +22,9 @@ public class XmlUtils {
         case Double doubles -> cell.setCellValue(doubles);
         case BigDecimal decimals -> cell.setCellValue(decimals.doubleValue());
         case Long longs -> cell.setCellValue(longs);
-        case LocalDateTime localDateTime -> cell.setCellValue(localDateTime);
+        case LocalDateTime localDateTime -> cell.setCellValue(localDateTime.toString().replace("T", " ").split("\\.")[0]);
         case LocalTime localTime -> cell.setCellValue(localTime.toString());
+        case LocalDate localDate -> cell.setCellValue(localDate.toString());
         case DayOfWeek dayOfWeek -> cell.setCellValue(dayOfWeek.name());
         case SignalIndicator signalIndicator -> cell.setCellValue(signalIndicator.name());
         default -> throw new IllegalStateException("Unexpected value: " + o);

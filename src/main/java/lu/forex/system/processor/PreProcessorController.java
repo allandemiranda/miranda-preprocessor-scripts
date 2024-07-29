@@ -27,18 +27,20 @@ public class PreProcessorController {
         .forEach(inputFile -> Arrays.stream(TimeFrame.values()).parallel().forEach(timeFrame -> {
           final Symbol symbol = Symbol.valueOf(inputFile.getName().split("_")[0]);
 
+          PrintsUtils.printCandlesticksMemoryExcel(inputFile, timeFrame, symbol, outputFolder);
+
           try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
             PrintsUtils.printCandlesticksExcel(bufferedReader, timeFrame, symbol, outputFolder);
           } catch (IOException e) {
             throw new IllegalStateException(e);
           }
-
-          try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
-            final Collection<Trade> trades = TradeService.getTrades(inputFile, bufferedReader, timeFrame, symbol);
-            PrintsUtils.printTradesExcel(trades, timeFrame, symbol, outputFolder);
-          } catch (IOException e) {
-            throw new IllegalStateException(e);
-          }
+//
+//          try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
+//            final Collection<Trade> trades = TradeService.getTrades(inputFile, bufferedReader, timeFrame, symbol);
+//            PrintsUtils.printTradesExcel(trades, timeFrame, symbol, outputFolder);
+//          } catch (IOException e) {
+//            throw new IllegalStateException(e);
+//          }
         }));
   }
 }

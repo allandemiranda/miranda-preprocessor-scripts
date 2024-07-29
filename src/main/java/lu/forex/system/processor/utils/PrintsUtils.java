@@ -75,6 +75,51 @@ public class PrintsUtils {
   }
 
   @SneakyThrows
+  public static void printCandlesticksMemoryExcel(final @NonNull File inputFile, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol, final @NonNull File outputFolder) {
+    log.info("Printing Memory Candlesticks Excel for symbol {} at timeframe", symbol.name(), timeFrame.name());
+    try (final Workbook workbook = new XSSFWorkbook()) {
+      final Sheet sheet = workbook.createSheet(symbol.name());
+      final Row headerRow = sheet.createRow(0);
+      final String[] header = new String[]{"Day", "Hour", "Open", "High", "Low", "Close", "ADX_adx", "ADX_+di(P)", "ADX_-di(P)", "ADX_tr1", "ADX_+dm1", "ADX_-dm1", "ADX_dx",
+          "ADX_signalIndicator", "RSI_gain", "RSI_loss", "RSI_averageGain", "RSI_averageLoss", "RSI_rsi", "RSI_signalIndicator", "Candlestick_signalIndicator"};
+      IntStream.range(0, header.length).forEach(i -> headerRow.createCell(i).setCellValue(header[i]));
+
+      final AtomicInteger i = new AtomicInteger(1);
+      CandlestickService.getCandlesticksMemory(inputFile, timeFrame, symbol).forEach(candlestick -> {
+        final Row row = sheet.createRow(i.getAndIncrement());
+        IntStream.range(0, header.length).forEach(j -> {
+          final Cell cell = row.createCell(j);
+          switch (j) {
+            case 0 -> XmlUtils.setCellValue(candlestick.getTimestamp().toLocalDate(), cell);
+            case 1 -> XmlUtils.setCellValue(candlestick.getTimestamp().toLocalTime(), cell);
+            case 2 -> XmlUtils.setCellValue(candlestick.getBody().getOpen(), cell);
+            case 3 -> XmlUtils.setCellValue(candlestick.getBody().getHigh(), cell);
+            case 4 -> XmlUtils.setCellValue(candlestick.getBody().getLow(), cell);
+            case 5 -> XmlUtils.setCellValue(candlestick.getBody().getClose(), cell);
+            case 6 -> XmlUtils.setCellValue(candlestick.getAdx().getKeyAdx(), cell);
+            case 7 -> XmlUtils.setCellValue(candlestick.getAdx().getKeyPDiP(), cell);
+            case 8 -> XmlUtils.setCellValue(candlestick.getAdx().getKeyNDiP(), cell);
+            case 9 -> XmlUtils.setCellValue(candlestick.getAdx().getKeyTr1(), cell);
+            case 10 -> XmlUtils.setCellValue(candlestick.getAdx().getKeyPDm1(), cell);
+            case 11 -> XmlUtils.setCellValue(candlestick.getAdx().getKeyNDm1(), cell);
+            case 12 -> XmlUtils.setCellValue(candlestick.getAdx().getKeyDx(), cell);
+            case 13 -> XmlUtils.setCellValue(candlestick.getAdx().getSignal(), cell);
+            case 14 -> XmlUtils.setCellValue(candlestick.getRsi().getKeyGain(), cell);
+            case 15 -> XmlUtils.setCellValue(candlestick.getRsi().getKeyLoss(), cell);
+            case 16 -> XmlUtils.setCellValue(candlestick.getRsi().getKeyAverageGain(), cell);
+            case 17 -> XmlUtils.setCellValue(candlestick.getRsi().getKeyAverageLoss(), cell);
+            case 18 -> XmlUtils.setCellValue(candlestick.getRsi().getKeyRsi(), cell);
+            case 19 -> XmlUtils.setCellValue(candlestick.getRsi().getSignal(), cell);
+            case 20 -> XmlUtils.setCellValue(candlestick.getSignalIndicator(), cell);
+          }
+        });
+      });
+      workbook.write(new FileOutputStream(new File(outputFolder, symbol.name().concat("_").concat(timeFrame.name()).concat("_candlesticks_memory.xlsx"))));
+    }
+    log.info("Memory Candlesticks Excel for symbol {} at timeframe {} printed", symbol.name(), timeFrame.name());
+  }
+
+  @SneakyThrows
   public static void printTradesExcel(final @NonNull Collection<Trade> tradesCollection, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol, final @NonNull File outputFolder) {
     log.info("Printing Trades Excel for symbol {} at timeframe {}", symbol.name(), timeFrame.name());
     final DayOfWeek[] dayOfWeeks = Arrays.stream(DayOfWeek.values()).filter(dayOfWeek -> !DayOfWeek.SATURDAY.equals(dayOfWeek) && !DayOfWeek.SUNDAY.equals(dayOfWeek))
