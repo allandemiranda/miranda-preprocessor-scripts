@@ -5,9 +5,11 @@ import java.time.DayOfWeek;
 import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @AllArgsConstructor
+@ToString
 public class Trade {
 
   private final int stopLoss;

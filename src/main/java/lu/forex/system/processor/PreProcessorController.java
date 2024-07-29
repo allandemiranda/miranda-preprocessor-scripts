@@ -31,11 +31,11 @@ public class PreProcessorController {
           final TimeFrame timeFrame = triple.getMiddle();
           final Symbol symbol = triple.getRight();
 
-          try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
-            PrintsUtils.printCandlesticksExcel(bufferedReader, timeFrame, symbol, outputFolder);
-          } catch (IOException e) {
-            throw new IllegalStateException(e);
-          }
+//          try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
+//            PrintsUtils.printCandlesticksExcel(bufferedReader, timeFrame, symbol, outputFolder);
+//          } catch (IOException e) {
+//            throw new IllegalStateException(e);
+//          }
 
           try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
             final Collection<Trade> trades = TradeService.getTrades(inputFile, bufferedReader, timeFrame, symbol).toList();
