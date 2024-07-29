@@ -8,8 +8,8 @@ import lombok.Getter;
 import lombok.ToString;
 
 @Getter
-@AllArgsConstructor
 @ToString
+@AllArgsConstructor
 public class Trade {
 
   private final int stopLoss;

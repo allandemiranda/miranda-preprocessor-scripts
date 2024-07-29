@@ -5,12 +5,14 @@ import java.util.Objects;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 import lu.forex.system.processor.enums.SignalIndicator;
 import lu.forex.system.processor.enums.TimeFrame;
 import lu.forex.system.processor.utils.TimeFrameUtils;
 
 @Getter
 @Setter
+@ToString
 public class Candlestick {
 
   private final LocalDateTime timestamp;

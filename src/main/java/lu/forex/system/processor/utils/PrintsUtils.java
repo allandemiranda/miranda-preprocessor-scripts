@@ -3,6 +3,7 @@ package lu.forex.system.processor.utils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.Arrays;
@@ -29,7 +30,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class PrintsUtils {
 
   @SneakyThrows
-  public static void printCandlesticksExcel(final @NonNull BufferedReader bufferedReader, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol, final @NonNull File outputFolder) {
+  public static void printCandlesticksExcel(final @NonNull BufferedReader bufferedReader, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol,
+      final @NonNull File outputFolder) {
     log.info("Printing Candlesticks Excel for symbol {} at timeframe {}", symbol.name(), timeFrame.name());
     try (final Workbook workbook = new XSSFWorkbook()) {
       final Sheet sheet = workbook.createSheet(symbol.name());
@@ -94,13 +96,39 @@ public class PrintsUtils {
                   case "TP" -> trade.getTakeProfitTotal();
                   case "SL" -> trade.getStopLossTotal();
                   case "TOTAL" -> trade.getOrdersTotal();
-                  case "PERCENTAGE_TP" -> trade.getHitPercentage();
+                  case "PERCENTAGE_TP" -> trade.getHitPercentage().multiply(BigDecimal.valueOf(100d));
                   case "BALANCE" -> trade.getProfitTotal();
                   default -> throw new IllegalStateException("Unexpected value: " + sheetName);
                 }, sheet.getRow(j + 1).createCell(i + 1)));
           });
         });
       });
+
+      final Sheet sheet = workbook.createSheet("TRADES");
+      final Row headerRow = sheet.createRow(0);
+      final String[] header = new String[]{"TIME_START", "TIME_END", "WEEK", "TP", "SL", "PERCENTAGE_TP", "ORDERS_TP", "ORDERS_SL", "ORDERS_TOTAL", "ORDERS_PROFIT"};
+      IntStream.range(0, header.length).forEach(i -> headerRow.createCell(i).setCellValue(header[i]));
+      final AtomicInteger i = new AtomicInteger(1);
+      tradesCollection.forEach(trade -> {
+        final Row row = sheet.createRow(i.getAndIncrement());
+        IntStream.range(0, header.length).forEach(j -> {
+          final Cell cell = row.createCell(j);
+          switch (j) {
+            case 0 -> XmlUtils.setCellValue(LocalTime.of(trade.getSlotStart() * timeFrame.getSlotTimeH(), 0, 0), cell);
+            case 1 -> XmlUtils.setCellValue(LocalTime.of(trade.getSlotStart() * timeFrame.getSlotTimeH(), 0, 0).plusHours(timeFrame.getSlotTimeH()).minusSeconds(1), cell);
+            case 2 -> XmlUtils.setCellValue(trade.getSlotWeek(), cell);
+            case 3 -> XmlUtils.setCellValue(trade.getTakeProfit(), cell);
+            case 4 -> XmlUtils.setCellValue(trade.getStopLoss(), cell);
+            case 5 -> XmlUtils.setCellValue(trade.getHitPercentage().multiply(BigDecimal.valueOf(100d)), cell);
+            case 6 -> XmlUtils.setCellValue(trade.getTakeProfitTotal(), cell);
+            case 7 -> XmlUtils.setCellValue(trade.getStopLossTotal(), cell);
+            case 8 -> XmlUtils.setCellValue(trade.getOrdersTotal(), cell);
+            case 9 -> XmlUtils.setCellValue(trade.getProfitTotal(), cell);
+            default -> throw new IllegalStateException("Unexpected value: " + trade.toString());
+          }
+        });
+      });
+
       workbook.write(new FileOutputStream(new File(outputFolder, symbol.name().concat("_").concat(timeFrame.name()).concat("_trades.xlsx"))));
     }
     log.info("Trades Excel for symbol {} at timeframe {} printed", symbol.name(), timeFrame.name());

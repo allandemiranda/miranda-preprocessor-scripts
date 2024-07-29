@@ -6,9 +6,11 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @EqualsAndHashCode
+@ToString
 public class CandlestickBody {
 
   private final BigDecimal open;
