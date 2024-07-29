@@ -27,6 +27,7 @@ public class PreProcessorController {
         .forEach(inputFile -> Arrays.stream(TimeFrame.values()).parallel().forEach(timeFrame -> {
           final Symbol symbol = Symbol.valueOf(inputFile.getName().split("_")[0]);
 
+          PrintsUtils.printLastTickMemoryExcel(inputFile, symbol, outputFolder);
           PrintsUtils.printCandlesticksMemoryExcel(inputFile, timeFrame, symbol, outputFolder);
 
           try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {

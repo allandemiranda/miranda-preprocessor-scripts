@@ -1,8 +1,6 @@
 package lu.forex.system.processor.services;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,7 +17,6 @@ import org.apache.commons.lang3.tuple.Pair;
 public class TickService {
 
   /**
-   * @param inputFile The input file
    * @return The ticks Pair ( CURRENT | LAST )
    */
   @SneakyThrows

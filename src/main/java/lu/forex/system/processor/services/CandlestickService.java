@@ -30,7 +30,7 @@ public class CandlestickService {
   @SneakyThrows
   public static Stream<Candlestick> getCandlesticks(final @NonNull BufferedReader bufferedReader, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol) {
     log.info("Getting Candlesticks for symbol {} at timeframe {}", symbol.name(), timeFrame.name());
-    final LinkedList<Candlestick> repositoryBuffer = getInitCandlestickRepository();
+    final LinkedList<Candlestick> repositoryBuffer = getInitCandlestickRepository(REPOSITORY_SIZE);
 
     return TickService.getTicks(bufferedReader).map(tickTickPair -> {
       final Tick currentTick = tickTickPair.getKey();
@@ -56,7 +56,7 @@ public class CandlestickService {
   @SneakyThrows
   public static @NonNull Collection<Candlestick> getCandlesticksMemory(final @NonNull File inputFile, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol) {
     log.info("Getting Memory Candlesticks for symbol {} at timeframe {} to size {}", symbol.name(), timeFrame.name(), REPOSITORY_SIZE);
-    final LinkedList<Candlestick> repositoryBuffer = getInitCandlestickRepository();
+    final LinkedList<Candlestick> repositoryBuffer = getInitCandlestickRepository(50);
 
     try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
       TickService.getTicks(bufferedReader).forEach(tickTickPair -> {
@@ -87,8 +87,8 @@ public class CandlestickService {
     repositoryBuffer.removeLast();
   }
 
-  private static LinkedList<Candlestick> getInitCandlestickRepository() {
-    return IntStream.range(0, REPOSITORY_SIZE).mapToObj(i -> (Candlestick) null).collect(Collectors.toCollection(LinkedList::new));
+  private static LinkedList<Candlestick> getInitCandlestickRepository(final int repositorySize) {
+    return IntStream.range(0, repositorySize).mapToObj(i -> (Candlestick) null).collect(Collectors.toCollection(LinkedList::new));
   }
 
   public static void calculateSignalIndicator(final @NonNull Candlestick currentCandlestick, final Candlestick lastCandlestick) {
