@@ -19,8 +19,7 @@ public class Tick {
 
   @NonNull
   public BigDecimal getSpread() {
-    final BigDecimal spread = this.getBid().subtract(this.getAsk());
-    return spread.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO : spread.multiply(BigDecimal.valueOf(-1.0));
+    return this.getBid().subtract(this.getAsk());
   }
 
   @Override
