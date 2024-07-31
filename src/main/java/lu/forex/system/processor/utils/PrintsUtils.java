@@ -249,7 +249,7 @@ public class PrintsUtils {
         csvWriter.writeNext(line);
       });
 
-      workbook.write(new FileOutputStream(new File(outputFolder, symbol.name().concat(timeFrame.name()).concat("_trades.xlsx"))));
+      workbook.write(new FileOutputStream(new File(outputFolder, symbol.name().concat("_").concat(timeFrame.name()).concat("_trades.xlsx"))));
     }
     log.info("Trades Excel for symbol {} at timeframe {} printed", symbol.name(), timeFrame.name());
   }
