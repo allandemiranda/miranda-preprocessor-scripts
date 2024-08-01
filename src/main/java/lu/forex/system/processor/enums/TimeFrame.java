@@ -24,7 +24,6 @@ public enum TimeFrame {
   public enum Frame {
     MINUTE(1), HOUR(60 * MINUTE.minutes);
 
-    @NonNull
     private final int minutes;
   }
 }
