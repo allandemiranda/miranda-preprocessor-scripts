@@ -7,9 +7,7 @@ import java.util.Collection;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import lombok.extern.log4j.Log4j2;
 
-@Log4j2
 @UtilityClass
 public class MathUtils {
 
@@ -32,18 +30,6 @@ public class MathUtils {
     return Arrays.stream(values).reduce(values[0], BigDecimal::max);
   }
 
-  public static @NonNull BigDecimal getMax(final @NonNull Collection<@NonNull BigDecimal> collection) {
-    return getMax(collection.toArray(BigDecimal[]::new));
-  }
-
-  public static @NonNull BigDecimal getMin(final BigDecimal @NonNull ... values) {
-    return Arrays.stream(values).reduce(values[0], BigDecimal::min);
-  }
-
-  public static @NonNull BigDecimal getMin(final @NonNull Collection<@NonNull BigDecimal> collection) {
-    return getMin(collection.toArray(BigDecimal[]::new));
-  }
-
   public static @NonNull BigDecimal getSum(final @NonNull Collection<@NonNull BigDecimal> collection) {
     return collection.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
   }
@@ -52,17 +38,8 @@ public class MathUtils {
     return getSum(Arrays.asList(values));
   }
 
-  public static @NonNull BigDecimal getSubtract(final @NonNull BigDecimal a, final @NonNull BigDecimal b) {
-    return a.subtract(b);
-  }
-
-  public static @NonNull BigDecimal getDivision(final @NonNull BigDecimal dividend, final int divisor) {
-    return dividend.divide(BigDecimal.valueOf(divisor), SCALE, ROUNDING_MODE);
-  }
-
   public static @NonNull BigDecimal getDivision(final @NonNull BigDecimal dividend, final @NonNull BigDecimal divisor) {
-    if(divisor.compareTo(BigDecimal.ZERO) == 0) {
-      log.warn("Divisor is zero ({}/{})", dividend.toString(), divisor.toString());
+    if (divisor.compareTo(BigDecimal.ZERO) == 0) {
       return BigDecimal.ZERO;
     } else {
       return dividend.divide(divisor, SCALE, ROUNDING_MODE);
