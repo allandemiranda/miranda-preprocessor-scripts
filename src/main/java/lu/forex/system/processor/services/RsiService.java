@@ -14,8 +14,8 @@ import lu.forex.system.processor.utils.MathUtils;
 public class RsiService {
 
   private static final int PERIOD = 14;
-  private static final BigDecimal OVERBOUGHT = BigDecimal.valueOf(70.0);
-  private static final BigDecimal OVERSOLD = BigDecimal.valueOf(30.0);
+  private static final BigDecimal OVERBOUGHT = BigDecimal.valueOf(50.0);
+  private static final BigDecimal OVERSOLD = BigDecimal.valueOf(50.0);
 
   public static void calculate(final @NonNull Candlestick @NonNull [] candlesticks) {
     final RelativeStrengthIndex[] technicalIndicators = IntStream.range(0, candlesticks.length < PERIOD ? 1 : PERIOD).mapToObj(i -> candlesticks[i].getRsi())

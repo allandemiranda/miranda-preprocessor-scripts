@@ -12,7 +12,7 @@ import lu.forex.system.processor.utils.MathUtils;
 @Getter
 @AllArgsConstructor
 public enum SignalIndicator {
-  BULLISH(OrderType.BUY), BEARISH(OrderType.SELL), NEUTRAL(null);
+  BULLISH(OrderType.SELL), BEARISH(OrderType.BUY), NEUTRAL(null);
 
   private final OrderType orderType;
 

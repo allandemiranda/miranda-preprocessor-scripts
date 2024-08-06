@@ -184,10 +184,7 @@ public class PrintsUtils {
     final DayOfWeek[] dayOfWeeks = Arrays.stream(DayOfWeek.values()).filter(dayOfWeek -> !DayOfWeek.SATURDAY.equals(dayOfWeek) && !DayOfWeek.SUNDAY.equals(dayOfWeek))
         .toArray(DayOfWeek[]::new);
     final int[] times = IntStream.range(0, 24 / timeFrame.getSlotTimeH()).toArray();
-    try (final Workbook workbook = new XSSFWorkbook();
-//        FileWriter fileWriter = new FileWriter(new File(outputFolder, symbol.name().concat("_").concat(timeFrame.name()).concat("_trades_memory.csv")));
-//        CSVWriter csvWriter = new CSVWriter(fileWriter)
-    ) {
+    try (final Workbook workbook = new XSSFWorkbook()) {
       Stream.of("TP", "SL", "TOTAL", "PERCENTAGE_TP", "BALANCE").forEach(sheetName -> {
         final Sheet sheet = workbook.createSheet(sheetName);
         final Row headerRow = sheet.createRow(0);
@@ -213,9 +210,8 @@ public class PrintsUtils {
 
       final Sheet sheet = workbook.createSheet("TRADES");
       final Row headerRow = sheet.createRow(0);
-      final String[] header = new String[]{"TIME_START", "TIME_END", "WEEK", "TP", "SL", "PERCENTAGE_TP", "ORDERS_TP", "ORDERS_SL", "ORDERS_TOTAL", "ORDERS_PROFIT"};
+      final String[] header = new String[]{"TIME_START", "TIME_END", "WEEK", "TP", "SL", "PERCENTAGE_TP", "ORDERS_TP", "ORDERS_SL", "ORDERS_TOTAL", "ORDERS_PROFIT", "FLIP"};
       IntStream.range(0, header.length).forEach(i -> headerRow.createCell(i).setCellValue(header[i]));
-//      csvWriter.writeNext(header);
       final AtomicInteger i = new AtomicInteger(1);
       tradesCollection.forEach(trade -> {
         final Row row = sheet.createRow(i.getAndIncrement());
@@ -232,23 +228,10 @@ public class PrintsUtils {
             case 7 -> XmlUtils.setCellValue(trade.getStopLossTotal(), cell);
             case 8 -> XmlUtils.setCellValue(trade.getOrdersTotal(), cell);
             case 9 -> XmlUtils.setCellValue(trade.getProfitTotal(), cell);
+            case 10 -> XmlUtils.setCellValue(trade.isFlip(), cell);
             default -> throw new IllegalStateException("Unexpected value: " + trade.toString());
           }
         });
-//        final String[] line = IntStream.range(0, header.length).mapToObj(j -> switch (j) {
-//          case 0 -> LocalTime.of(trade.getSlotStart() * timeFrame.getSlotTimeH(), 0, 0);
-//          case 1 -> LocalTime.of(trade.getSlotStart() * timeFrame.getSlotTimeH(), 0, 0).plusHours(timeFrame.getSlotTimeH()).minusSeconds(1);
-//          case 2 -> trade.getSlotWeek();
-//          case 3 -> trade.getTakeProfit();
-//          case 4 -> trade.getStopLoss();
-//          case 5 -> trade.getHitPercentage().multiply(BigDecimal.valueOf(100d));
-//          case 6 -> trade.getTakeProfitTotal();
-//          case 7 -> trade.getStopLossTotal();
-//          case 8 -> trade.getOrdersTotal();
-//          case 9 -> trade.getProfitTotal();
-//          default -> throw new IllegalStateException("Unexpected value: " + trade.toString());
-//        }).map(Object::toString).toArray(String[]::new);
-//        csvWriter.writeNext(line);
       });
 
       workbook.write(new FileOutputStream(new File(outputFolder, symbol.name().concat("_").concat(timeFrame.name()).concat("_trades.xlsx"))));

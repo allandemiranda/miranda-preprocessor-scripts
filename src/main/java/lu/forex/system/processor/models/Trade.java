@@ -16,6 +16,7 @@ public class Trade {
   private final int takeProfit;
   private final DayOfWeek slotWeek;
   private final int slotStart;
+  private final boolean flip;
 
   private final long ordersTotal;
   private final long takeProfitTotal;
@@ -32,11 +33,11 @@ public class Trade {
       return false;
     }
     final Trade trade = (Trade) o;
-    return stopLoss == trade.stopLoss && takeProfit == trade.takeProfit && slotStart == trade.slotStart && slotWeek == trade.slotWeek;
+    return stopLoss == trade.stopLoss && takeProfit == trade.takeProfit && slotStart == trade.slotStart && slotWeek == trade.slotWeek && flip == trade.flip;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(stopLoss, takeProfit, slotWeek, slotStart);
+    return Objects.hash(stopLoss, takeProfit, slotWeek, slotStart, flip);
   }
 }

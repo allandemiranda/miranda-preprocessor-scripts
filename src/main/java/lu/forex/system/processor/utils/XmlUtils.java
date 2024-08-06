@@ -27,6 +27,7 @@ public class XmlUtils {
         case LocalDate localDate -> cell.setCellValue(localDate.toString());
         case DayOfWeek dayOfWeek -> cell.setCellValue(dayOfWeek.name());
         case SignalIndicator signalIndicator -> cell.setCellValue(signalIndicator.name());
+        case Boolean bool -> cell.setCellValue(bool);
         default -> throw new IllegalStateException("Unexpected value: " + o);
       }
     }

@@ -14,7 +14,7 @@ import lu.forex.system.processor.utils.MathUtils;
 public class AdxService {
 
   private static final int PERIOD = 14;
-  private static final BigDecimal TENDENCY_LINE = BigDecimal.valueOf(50);
+  private static final BigDecimal TENDENCY_LINE = BigDecimal.valueOf(40);
   private static final BigDecimal DECIMAL = BigDecimal.valueOf(100);
 
   public static void calculate(final @NonNull Candlestick @NonNull [] candlesticks) {
