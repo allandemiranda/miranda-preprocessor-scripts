@@ -48,9 +48,9 @@ public class RsiService {
         final BigDecimal rsi = BigDecimal.valueOf(100).subtract(BigDecimal.valueOf(100).divide(BigDecimal.ONE.add(rs), MathUtils.SCALE, MathUtils.ROUNDING_MODE));
         technicalIndicators[0].setKeyRsi(rsi);
         if (rsi.compareTo(OVERBOUGHT) > 0) {
-          technicalIndicators[0].setSignal(SignalIndicator.BULLISH);
-        } else if (rsi.compareTo(OVERSOLD) < 0) {
           technicalIndicators[0].setSignal(SignalIndicator.BEARISH);
+        } else if (rsi.compareTo(OVERSOLD) < 0) {
+          technicalIndicators[0].setSignal(SignalIndicator.BULLISH);
         }
       }
     }
