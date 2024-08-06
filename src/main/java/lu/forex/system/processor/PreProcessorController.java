@@ -11,11 +11,11 @@ import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import lu.forex.system.processor.enums.Symbol;
 import lu.forex.system.processor.enums.TimeFrame;
-import lu.forex.system.processor.models.Candlestick;
-import lu.forex.system.processor.models.Externalizing;
-import lu.forex.system.processor.models.Tick;
+//import lu.forex.system.processor.models.Candlestick;
+//import lu.forex.system.processor.models.Externalizing;
+//import lu.forex.system.processor.models.Tick;
 import lu.forex.system.processor.models.Trade;
-import lu.forex.system.processor.services.CandlestickService;
+//import lu.forex.system.processor.services.CandlestickService;
 import lu.forex.system.processor.services.TradeService;
 import lu.forex.system.processor.utils.PrintsUtils;
 
@@ -54,20 +54,20 @@ public class PreProcessorController {
         }));
   }
 
-  public static Collection<Externalizing> getExternalizingCollection(@NonNull final File inputFolder) {
-    return Arrays.stream(Objects.requireNonNull(inputFolder.listFiles())).parallel()
-        .filter(file -> Arrays.stream(Symbol.values()).anyMatch(symbol -> symbol.name().equals(file.getName().split("_")[0])))
-        .flatMap(inputFile -> Arrays.stream(TimeFrame.values()).parallel().map(timeFrame -> {
-          try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
-            final Symbol symbol = Symbol.valueOf(inputFile.getName().split("_")[0]);
-            final Tick lastTick = PrintsUtils.lastTickMemoryExternalizing(inputFile);
-            final Collection<Candlestick> memoryCandlesticks = CandlestickService.getCandlesticksMemory(inputFile, timeFrame, symbol);
-            final Collection<Trade> trades = TradeService.getTrades(inputFile, bufferedReader, timeFrame, symbol);
-            return new Externalizing(symbol.name(), timeFrame.name(), memoryCandlesticks, trades, lastTick);
-          } catch (IOException e) {
-            throw new IllegalStateException(e);
-          }
-        })).toList();
-  }
+//  public static Collection<Externalizing> getExternalizingCollection(@NonNull final File inputFolder) {
+//    return Arrays.stream(Objects.requireNonNull(inputFolder.listFiles())).parallel()
+//        .filter(file -> Arrays.stream(Symbol.values()).anyMatch(symbol -> symbol.name().equals(file.getName().split("_")[0])))
+//        .flatMap(inputFile -> Arrays.stream(TimeFrame.values()).parallel().map(timeFrame -> {
+//          try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile))) {
+//            final Symbol symbol = Symbol.valueOf(inputFile.getName().split("_")[0]);
+//            final Tick lastTick = PrintsUtils.lastTickMemoryExternalizing(inputFile);
+//            final Collection<Candlestick> memoryCandlesticks = CandlestickService.getCandlesticksMemory(inputFile, timeFrame, symbol);
+//            final Collection<Trade> trades = TradeService.getTrades(inputFile, bufferedReader, timeFrame, symbol);
+//            return new Externalizing(symbol.name(), timeFrame.name(), memoryCandlesticks, trades, lastTick);
+//          } catch (IOException e) {
+//            throw new IllegalStateException(e);
+//          }
+//        })).toList();
+//  }
 
 }
