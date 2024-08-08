@@ -39,20 +39,13 @@ import org.apache.commons.lang3.tuple.Pair;
 @UtilityClass
 public class TradeService {
 
-  private static final Pair<Integer, Integer> RANGER_TP_SL = Pair.of(100, 150);
+  private static final Pair<Integer, Integer> RANGER_TP_SL = Pair.of(100, 115);
   private static final int SKIP_RANGER_TP = 5;
   private static final BigDecimal RISK_SL = BigDecimal.valueOf(0.70);
   private static final BigDecimal TP_TARGET = BigDecimal.valueOf(0.60);
 
   public static @NonNull Collection<Trade> getTrades(final @NonNull File inputFile, final @NonNull BufferedReader bufferedReader, final @NonNull TimeFrame timeFrame, final @NonNull Symbol symbol) {
     log.info("Getting Trades for symbol {} at timeframe {}", symbol.name(), timeFrame.name());
-
-    final Collection<RangerProfit> rangerProfitCollection = IntStream.rangeClosed(0, (RANGER_TP_SL.getValue() - RANGER_TP_SL.getKey()) / SKIP_RANGER_TP).mapToObj(i -> {
-      final int power = (SKIP_RANGER_TP * i);
-      final int tp = power + RANGER_TP_SL.getKey();
-      final int sl = BigDecimal.valueOf(-tp).multiply(RISK_SL).intValue();
-      return new RangerProfit(BigDecimal.valueOf(tp), BigDecimal.valueOf(sl));
-    }).collect(Collectors.toSet());
 
     final Candlestick[] candlestickArray = CandlestickService.getCandlesticks(bufferedReader, timeFrame, symbol)
         .filter(candlestick -> !SignalIndicator.NEUTRAL.equals(candlestick.getSignalIndicator())).toArray(Candlestick[]::new);
@@ -73,25 +66,33 @@ public class TradeService {
     }
     log.info("We have {} candlesticks not neutral in symbol {} at timeframe {}", candlestickList.size(), symbol.name(), timeFrame.name());
 
+    final Collection<RangerProfit> rangerProfitCollection = IntStream.rangeClosed(0, (RANGER_TP_SL.getValue() - RANGER_TP_SL.getKey()) / SKIP_RANGER_TP).mapToObj(i -> {
+      final int power = (SKIP_RANGER_TP * i);
+      final int tp = power + RANGER_TP_SL.getKey();
+      final int sl = BigDecimal.valueOf(-tp).multiply(RISK_SL).intValue();
+      return new RangerProfit(BigDecimal.valueOf(tp), BigDecimal.valueOf(sl));
+    }).collect(Collectors.toSet());
+
     final Map<TimeScope, Map<RangerProfit, List<PreTrade>>> timeScopeMapMap = candlestickList.parallelStream().flatMap(candlestick -> rangerProfitCollection.parallelStream().flatMap(
-            rangerProfit -> Stream.of(
-                new PreTrade(false, rangerProfit, new TimeScope(candlestick.getOpenTickTimestamp().getDayOfWeek(), candlestick.getOpenTickTimestamp().getHour() / timeFrame.getSlotTimeH()),
-                    candlestick.getSignalIndicator(), candlestick.getOpenTickTimestamp()),
-                new PreTrade(true, rangerProfit, new TimeScope(candlestick.getOpenTickTimestamp().getDayOfWeek(), candlestick.getOpenTickTimestamp().getHour() / timeFrame.getSlotTimeH()),
-                    candlestick.getSignalIndicator(), candlestick.getOpenTickTimestamp()))))
+            rangerProfit -> {
+              final PreTrade preTradeF = new PreTrade(false, rangerProfit, new TimeScope(candlestick.getOpenTickTimestamp().getDayOfWeek(), candlestick.getOpenTickTimestamp().getHour() / timeFrame.getSlotTimeH()), candlestick.getSignalIndicator(), candlestick.getOpenTickTimestamp());
+              final PreTrade preTradeT = new PreTrade(true, rangerProfit, new TimeScope(candlestick.getOpenTickTimestamp().getDayOfWeek(), candlestick.getOpenTickTimestamp().getHour() / timeFrame.getSlotTimeH()), candlestick.getSignalIndicator(), candlestick.getOpenTickTimestamp());
+              return Stream.of(preTradeT, preTradeF);
+            }))
         .collect(Collectors.groupingBy(PreTrade::getTimeScope, Collectors.groupingBy(PreTrade::getRangerProfit)));
     log.info("We have {} pre trades to analise in symbol {} at timeframe {}", timeScopeMapMap.values().stream().mapToInt(m -> m.values().size()).sum(), symbol.name(), timeFrame.name());
 
     final List<Trade> tradeList = timeScopeMapMap.entrySet().parallelStream().map(timeScopeMapEntry -> {
       final TimeScope timeScope = timeScopeMapEntry.getKey();
-      return List.of(true, false).parallelStream().map(aBoolean -> getTrade(inputFile, symbol, timeScopeMapEntry, timeScope, aBoolean)).filter(Objects::nonNull).max(Comparator.comparing(Trade::getHitPercentage)).orElse(null);
+      final Map<RangerProfit, List<PreTrade>> rangerProfitListMap = timeScopeMapEntry.getValue();
+      return List.of(true, false).parallelStream().map(aBoolean -> getTrade(inputFile, symbol, rangerProfitListMap, timeScope, aBoolean)).filter(Objects::nonNull).max(Comparator.comparing(Trade::getHitPercentage)).orElse(null);
     }).filter(Objects::nonNull).toList();
     log.info("Created {} trades from {} symbol at timeframe {}", tradeList.size(), symbol.name(), timeFrame.name());
     return tradeList;
   }
 
-  private static Trade getTrade(final @NonNull File inputFile, final @NonNull Symbol symbol, final @NonNull Entry<@NonNull TimeScope, Map<@NonNull RangerProfit, List<@NonNull PreTrade>>> timeScopeMapEntry, final @NonNull TimeScope timeScope, final boolean flip) {
-    for (final var rangerProfitListEntry : timeScopeMapEntry.getValue().entrySet().stream().sorted(Comparator.comparing(rangerProfitListEntry -> rangerProfitListEntry.getKey().getTakeProfit())).toList()) {
+  private static Trade getTrade(final @NonNull File inputFile, final @NonNull Symbol symbol, final @NonNull Map<@NonNull RangerProfit, List<@NonNull PreTrade>> timeScopeMapEntry, final @NonNull TimeScope timeScope, final boolean flip) {
+    for (final Entry<TradeService. RangerProfit, List<TradeService. PreTrade>> rangerProfitListEntry : timeScopeMapEntry.entrySet().stream().sorted(Comparator.comparing(rangerProfitListEntry -> rangerProfitListEntry.getKey().getTakeProfit())).toList()) {
       final RangerProfit rangerProfit = rangerProfitListEntry.getKey();
 
       try (final BufferedReader tickTradeBufferedReader = new BufferedReader(new FileReader(inputFile))) {
