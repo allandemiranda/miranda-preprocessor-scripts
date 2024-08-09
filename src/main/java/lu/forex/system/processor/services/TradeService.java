@@ -39,7 +39,7 @@ import org.apache.commons.lang3.tuple.Pair;
 @UtilityClass
 public class TradeService {
 
-  private static final Pair<Integer, Integer> RANGER_TP_SL = Pair.of(100, 115);
+  private static final Pair<Integer, Integer> RANGER_TP_SL = Pair.of(100, 110);
   private static final int SKIP_RANGER_TP = 5;
   private static final BigDecimal RISK_SL = BigDecimal.valueOf(0.70);
   private static final BigDecimal TP_TARGET = BigDecimal.valueOf(0.60);
