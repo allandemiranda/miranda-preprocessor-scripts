@@ -16,7 +16,7 @@ public class Trade {
   private final int takeProfit;
   private final DayOfWeek slotWeek;
   private final int slotStart;
-  private final boolean flip;
+  private final boolean flip = true;
 
   private final long ordersTotal;
   private final long takeProfitTotal;
