@@ -14,16 +14,7 @@ public enum Symbol {
   USDCAD(BigDecimal.valueOf(-0.8), BigDecimal.valueOf(-0.4), BigDecimal.valueOf(0.00001)),
   AUDUSD(BigDecimal.valueOf(6.3), BigDecimal.valueOf(-14.8), BigDecimal.valueOf(0.00001)),
   USDCHF(BigDecimal.valueOf(0.1), BigDecimal.valueOf(-1.0), BigDecimal.valueOf(0.00001)),
-  NZDUSD(BigDecimal.valueOf(2.8), BigDecimal.valueOf(-6.7), BigDecimal.valueOf(0.00001)),
-  USDHKD(BigDecimal.valueOf(0.2), BigDecimal.valueOf(-5.8), BigDecimal.valueOf(0.00001)),
-
-  EURUSA(BigDecimal.valueOf(-0.7), BigDecimal.valueOf(-1.0), BigDecimal.valueOf(0.00001)),
-  EURUSB(BigDecimal.valueOf(-0.7), BigDecimal.valueOf(-1.0), BigDecimal.valueOf(0.00001)),
-  EURUSC(BigDecimal.valueOf(-0.7), BigDecimal.valueOf(-1.0), BigDecimal.valueOf(0.00001)),
-  EURUSE(BigDecimal.valueOf(-0.7), BigDecimal.valueOf(-1.0), BigDecimal.valueOf(0.00001)),
-  EURUSF(BigDecimal.valueOf(-0.7), BigDecimal.valueOf(-1.0), BigDecimal.valueOf(0.00001)),
-  EURUSG(BigDecimal.valueOf(-0.7), BigDecimal.valueOf(-1.0), BigDecimal.valueOf(0.00001)),
-  EURUSH(BigDecimal.valueOf(-0.7), BigDecimal.valueOf(-1.0), BigDecimal.valueOf(0.00001)),
+  NZDUSD(BigDecimal.valueOf(2.8), BigDecimal.valueOf(-6.7), BigDecimal.valueOf(0.00001))
   ;
   //@formatter:on
 
